@@ -8,7 +8,6 @@ flg, ax = plt.subplots()
 dataSize    = 1000
 updLimits   = 100
 
-
 def Euclidean(kCount,kx,ky,x,y):
     ss = []
     for i in range(kCount):
@@ -19,91 +18,23 @@ def Euclidean(kCount,kx,ky,x,y):
         ss.append(s)
     return ss
 
-def kSet(kCount,s):
-    res = []
-    for i in range(dataSize):
-        tmp = []
-        for j in range(kCount):
-            tmp.append(s[j][i])
-        m = min(tmp)
-        res.append(tmp.index(m))
-
-    return res
-
-
-def kSetCentroid(kCount,kx,ky,x,y,k):
-    colorSeed = 30
-    cmap = plt.cm.get_cmap("nipy_spectral", 256)
-
-    sumx = [0] * len(k)
-    sumy = [0] * len(k)
-    count= [0] * len(k)
-    retryFlag= [0] * kCount
-
-    for i in range(len(k)):
-        plt.scatter(x[i], y[i], label="circle", color=cmap(k[i]*colorSeed), marker= ".", s=30) 
-
-        # kset sum
-        sumx[k[i]] += x[i]
-        sumy[k[i]] += y[i]
-        count[k[i]]+= 1
-
-    for i in range(kCount):
-        ax.scatter(kx[i], ky[i], label="stars", color=cmap(i*colorSeed), marker="^", s=100)
-
-        # centroid campare
-        avgx = sumx[i] / count[i]
-        avgy = sumy[i] / count[i]
-        if kx[i]==avgx and ky[i]==avgy:
-            retryFlag[i] = 1
-
-        # next centroid
-        kx[i] = avgx
-        ky[i] = avgy
-
-    return retryFlag
-
-
-def kmeans(kCount,x,y):
-    kx = random.sample(range(dataSize), kCount)
-    ky = random.sample(range(dataSize), kCount)
-
-    for i in range(updLimits):
-        sv = Euclidean(kCount,kx,ky,x,y)
-        kr = kSet(kCount,sv)
-        ret= kSetCentroid(kCount,kx,ky,x,y,kr)
-
-        trueCount = 0
-        for j in range(kCount):
-            if ret[j] == 1: 
-                trueCount += 1
-
-        plt.pause(0.1)
-
-        if trueCount == kCount:
-            print "kset centroid complete !"
-            break
-        else:
-            print "retry kset-centroid...%d" % trueCount
-            ax.clear()
-
-        #reset centroid point
-        #plt.draw() 
-
-    plt.waitforbuttonpress()
-
+seed = ['orange','green','blue','purple','midnightblue','forestgreen','goldenrod','c','naby','deepskyblue','olivedrab','sienna','maroon','dimgrey','m']
 
 x = []
 y = []
 xTable = {}
 yTable = {}
 
+user = '535220'
+xUser = []
+yUser = []
+
 def setItem(i,index,table,data):
     if table.get(data) == None:
         table[data] = index
-        index += 1
 
     i.append(table[data])
+    index += 1
     return index
 
 def vectorize(x, y):
@@ -118,17 +49,54 @@ def vectorize(x, y):
         r = line.split(',')
         r[1] = r[1].split('\r\n')[0]
         #print r
-        xIndex = setItem(x, xIndex, xTable, r[0])
-        yIndex = setItem(y, yIndex, yTable, r[1])
+        if r[0] == user:
+            xIndex = setItem(xUser, xIndex, xTable, r[0])
+            yIndex = setItem(yUser, yIndex, yTable, r[1])
+        else:
+            xIndex = setItem(x, xIndex, xTable, r[0])
+            yIndex = setItem(y, yIndex, yTable, r[1])
 
     f.close()
 
-    #print x
-    #print y
+    print xUser
+    print yUser
 
-    plt.scatter(x, y, label="circle", color='black', marker= ".", s=30) 
+    plt.scatter(x, y, color='grey', marker= ".", s=20) 
+    #plt.scatter(xUser, yUser, color='red', marker= ".", s=30) 
+
+    for i in range(len(y)):
+        for j in range(len(yUser)):
+            if y[i] == yUser[j]:
+                for k in range(len(x)):
+                    if x[i] == x[k]:
+                        plt.scatter(x[k], y[k], color=seed[j], marker= "^", s=35, vmin=10) 
+
+                #print x[i], y[i]
+
     plt.waitforbuttonpress()
 
+def vectorize2(x, y):
+    xIndex = 0
+    yIndex = 0
+
+    f = open("qr.csv", 'r')
+    while True:
+        line = f.readline()
+        if not line: break
+
+        r = line.split(',')
+        r[1] = r[1].split('\r\n')[0]
+
+        if int(r[0]) > 2:
+            xUser.append(r[1])
+            yUser.append(r[0])
+        else:
+            print r
+
+    f.close()
+
+    plt.scatter(xUser, yUser, color='black', marker= ".", s=10) 
+    plt.waitforbuttonpress()
 
 if __name__ == "__main__":
 
@@ -144,7 +112,8 @@ if __name__ == "__main__":
     kmeans(k, x, y)
     '''
 
-    vectorize(x, y)
+    #vectorize(x, y)
+    vectorize2(x, y)
     
 
 # End of File
